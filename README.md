@@ -57,7 +57,7 @@ python generate.py <start_date> [end_date] [options]
 
 **Options:**
 - `--output-dir DIR`: Custom output directory (defaults to start_date)
-- `--base-url URL`: Override API base URL (default: http://localhost:4321)
+- `--base-url URL`: Override API base URL (default: https://albertapaleo.org)
 - `--verbose, -v`: Enable verbose logging (DEBUG level)
 - `--quiet, -q`: Suppress informational messages (WARNING level only)
 - `--dry-run`: Preview what would be generated without creating files
@@ -80,9 +80,9 @@ python generate.py 2025-03-15 2025-03-22
 python generate.py 2025-01-15 --output-dir my-events
 ```
 
-**Use production API:**
+**Use local development API:**
 ```bash
-python generate.py 2025-01-15 --base-url https://albertapaleo.org
+python generate.py 2025-01-15 --base-url http://localhost:4321
 ```
 
 **Preview without generating files:**
@@ -162,10 +162,10 @@ Missing fields are handled gracefully and simply won't appear in the generated S
 - Check that start_date is before or equal to end_date
 
 **"Failed to connect to API" error:**
-- Verify the API server is running
+- Verify the API server is running and accessible
 - Check the API URL is correct (use `--base-url` to override)
 - Ensure your network connection is working
-- For localhost, verify the server is listening on the expected port
+- For local development, use `--base-url http://localhost:4321` if testing against a local server
 
 **"API endpoint not found (404)" error:**
 - Verify the API endpoint path is `/api/events`
@@ -200,6 +200,10 @@ Missing fields are handled gracefully and simply won't appear in the generated S
 
 3. **Test API directly:**
    ```bash
+   # Production API
+   curl "https://albertapaleo.org/api/events?start_date=2025-01-15&end_date=2025-01-22"
+   
+   # Local development API
    curl "http://localhost:4321/api/events?start_date=2025-01-15&end_date=2025-01-22"
    ```
 

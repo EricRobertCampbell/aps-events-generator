@@ -12,8 +12,8 @@ from svg_generator import generate_svg
 from validators import validate_date_format, validate_date_range, validate_api_response
 
 # Default API base URL
-DEFAULT_BASE_URL = "http://localhost:4321"
-# DEFAULT_BASE_URL = "https://albertapaleo.org"
+# DEFAULT_BASE_URL = "http://localhost:4321"  # For local development
+DEFAULT_BASE_URL = "https://albertapaleo.org"
 
 
 def main() -> None:
