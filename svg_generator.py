@@ -12,29 +12,6 @@ logger = logging.getLogger(__name__)
 TEXT_COLOUR = "#FFFFFF"  # White text colour
 
 
-def parse_date_without_time(date_str: str) -> str:
-    """
-    Parse date string and return only the date part (remove time if present).
-    
-    Args:
-        date_str: Date string that may include time
-        
-    Returns:
-        Date string without time component
-    """
-    if not date_str:
-        return date_str
-    
-    # Common patterns that include time
-    time_patterns = ['T', ' at ', ' @ ']
-    for pattern in time_patterns:
-        if pattern in date_str:
-            date_str = date_str.split(pattern)[0]
-            break
-    
-    return date_str.strip()
-
-
 def generate_svg(event_data: dict[str, Any], logo_path: str = "files/APS logo-black.svg") -> SVG:
     """
     Generate an SVG graphic for a single event.
@@ -160,11 +137,10 @@ def generate_svg(event_data: dict[str, Any], logo_path: str = "files/APS logo-bl
         })
         current_y_offset += 40 * line_height_multiplier
     
-    # Date (doubled: 20 -> 40, no label) - remove time if present
+    # Date (doubled: 20 -> 40, no label)
     if (date := event_data.get('date')):
-        date_without_time = parse_date_without_time(date)
         content_elements.append({
-            'text': date_without_time,
+            'text': date,
             'font_size': 40,
             'font_weight': None,
             'fill': TEXT_COLOUR,
