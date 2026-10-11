@@ -64,12 +64,21 @@ class APIClient:
             end_date: End date in YYYY-MM-DD format
             
         Returns:
-            List of event dictionaries. Each event may contain:
-            - title (str, optional): Event title
+            List of event dictionaries. Each event is the website frontmatter
+            plus the content-collection id. Display strings are not
+            preformatted. Each event may contain:
+            - id (str): Content collection id
+            - title (str): Event title
             - subtitle (str, optional): Event subtitle
-            - date (str, optional): Event date
-            - host (str, optional): Event host
+            - start (str, optional): ISO datetime with offset
+            - end (str, optional): ISO datetime with offset
+            - startDate (str, optional): Date-only start, YYYY-MM-DD
+            - endDate (str, optional): Date-only end, YYYY-MM-DD
+            - type (str): Event type
+            - host (str, optional): Host, when it is not the APS
             - location (str, optional): Event location
+            - detailsLink (str, optional): Link to more information
+            - image (dict, optional): ``src``, ``alt``, and optional ``attribution``
             
         Raises:
             requests.exceptions.RequestException: If the API request fails after retries

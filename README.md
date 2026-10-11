@@ -34,7 +34,13 @@ A Python script to generate SVG graphics for weekly palaeontological events from
 
 ### Basic Usage
 
-Generate SVGs for events in a date range:
+Generate SVGs for events starting today (through 7 days later):
+
+```bash
+python generate.py
+```
+
+Or specify a start date:
 
 ```bash
 python generate.py 2025-01-15
@@ -48,11 +54,11 @@ This will:
 ### Command-Line Options
 
 ```bash
-python generate.py <start_date> [end_date] [options]
+python generate.py [start_date] [end_date] [options]
 ```
 
 **Positional Arguments:**
-- `start_date`: Start date in YYYY-MM-DD format (required)
+- `start_date`: Start date in YYYY-MM-DD format (optional, defaults to today)
 - `end_date`: End date in YYYY-MM-DD format (optional, defaults to 7 days after start_date)
 
 **Options:**
@@ -102,9 +108,11 @@ The script creates:
 - SVG files for each event (e.g., `event_00.svg`, `event_01.svg`, etc.)
 
 Each SVG includes:
-- APS logo in the top-left corner
+- APS logo in the top-left corner, embedded in the file
 - "Palaeo Events!" header text (centered horizontally)
 - Event title, subtitle, host, date, and location (centered on the page)
+
+The logo artwork is written into the SVG, so moving the file does not break the logo. Dates are compact, for example `January 3, 4 - 5pm`. `content.txt` uses the same date after the weekday, for example `Saturday, January 3, 4 - 5pm: Event Title`.
 
 ## API Response Format
 
@@ -118,35 +126,49 @@ GET /api/events?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
 
 ### Response Format
 
-The API should return a JSON array where each element is an event object:
+The API should return a JSON array of event frontmatter. Dates stay in their source form. This script formats them for the graphic and for `content.txt`.
 
 ```json
 [
   {
+    "id": "2026-01-03-example",
     "title": "Event Title",
     "subtitle": "Event Subtitle",
-    "date": "January 15, 2025",
+    "start": "2026-01-03T16:00:00-07:00",
+    "end": "2026-01-03T17:00:00-07:00",
+    "type": "External",
     "host": "Event Host",
-    "location": "Calgary, AB"
+    "location": "Calgary, AB",
+    "detailsLink": "https://example.com/event",
+    "image": {
+      "src": "/events/2026/example.jpg",
+      "alt": "Event poster"
+    }
   },
   {
+    "id": "2026-01-20-field-trip",
     "title": "Another Event",
-    "subtitle": "Monthly Meeting",
-    "date": "January 20, 2025",
-    "host": "Dr. Smith",
+    "startDate": "2026-01-20",
+    "endDate": "2026-01-22",
+    "type": "Field Trip",
     "location": "Edmonton, AB"
   }
 ]
 ```
 
-**All fields are optional:**
-- `title` (str, optional): Event title
+**Fields:**
+- `id` (str): Content collection id
+- `title` (str): Event title
+- `type` (str): Event type, such as `Monthly Meeting` or `Field Trip`
 - `subtitle` (str, optional): Event subtitle
-- `date` (str, optional): Event date (any format)
-- `host` (str, optional): Event host
+- `start` / `end` (str, optional): ISO datetimes with an offset, used when the event has a time
+- `startDate` / `endDate` (str, optional): `YYYY-MM-DD`, used when the event has a date but no time
+- `host` (str, optional): Host, included only when the host is not the APS
 - `location` (str, optional): Event location
+- `detailsLink` (str, optional): Link to more information
+- `image` (object, optional): `src`, `alt`, and optional `attribution`. Not drawn on the graphic
 
-Missing fields are handled gracefully and simply won't appear in the generated SVG.
+Missing optional fields are omitted and simply won't appear in the generated SVG. Timed fields are preferred over date-only fields when both are present. A same-day range such as 4:00 p.m. to 5:00 p.m. on January 3 is written as `January 3, 4 - 5pm`.
 
 ### API Features
 
@@ -183,8 +205,9 @@ Missing fields are handled gracefully and simply won't appear in the generated S
 - Verify events exist in the API for those dates
 
 **Logo file not found:**
-- Ensure `files/APS logo-white.svg` exists in the project directory
+- Ensure `files/APS logo-black.svg` exists in the project directory
 - The script will continue without the logo but will log a warning
+- When the logo is found, it is embedded in each SVG rather than linked by path
 
 ### Debugging Tips
 
@@ -213,12 +236,14 @@ Missing fields are handled gracefully and simply won't appear in the generated S
 aps-weekly-events/
 ├── generate.py          # Main CLI entry point
 ├── api_client.py        # API client with retry logic and caching
+├── dates.py             # Compact date and time formatting
 ├── svg_generator.py      # SVG generation logic
 ├── validators.py        # Input validation functions
 ├── requirements.txt     # Python dependencies
 ├── README.md           # This file
 ├── .gitignore          # Git ignore rules
 └── files/
+    ├── APS logo-black.svg  # APS logo embedded in generated SVGs
     └── APS logo-white.svg  # APS logo file
 ```
 
@@ -235,9 +260,10 @@ The project follows Python best practices:
 ### Adding New Features
 
 1. **API Client** (`api_client.py`): Handles all API communication
-2. **SVG Generator** (`svg_generator.py`): Handles SVG creation
-3. **Validators** (`validators.py`): Input validation logic
-4. **CLI** (`generate.py`): Command-line interface
+2. **Dates** (`dates.py`): Compact date and time formatting
+3. **SVG Generator** (`svg_generator.py`): Handles SVG creation
+4. **Validators** (`validators.py`): Input validation logic
+5. **CLI** (`generate.py`): Command-line interface
 
 ## License
 

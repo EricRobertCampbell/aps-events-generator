@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 from api_client import APIClient
+from dates import event_weekday, format_event_when
 from svg_generator import generate_svg
 from validators import validate_date_format, validate_date_range, validate_api_response
 
@@ -28,6 +29,9 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Generate events for a week starting today
+  python generate.py
+
   # Generate events for a week starting January 15th
   python generate.py 2025-01-15
   
@@ -45,7 +49,9 @@ Examples:
     parser.add_argument(
         'start_date',
         type=str,
-        help='Start date in YYYY-MM-DD format (e.g., 2025-01-15)'
+        nargs='?',
+        default=None,
+        help='Start date in YYYY-MM-DD format (e.g., 2025-01-15). If omitted, defaults to today'
     )
     parser.add_argument(
         'end_date',
@@ -91,8 +97,12 @@ Examples:
     logger.info("Starting SVG generation process")
     
     try:
-        # Validate start date
-        start_date = validate_date_format(args.start_date)
+        # Validate start date (default to today if not provided)
+        if args.start_date:
+            start_date = validate_date_format(args.start_date)
+        else:
+            start_date = datetime.now().strftime('%Y-%m-%d')
+            logger.info(f"Start date not provided, defaulting to today: {start_date}")
         
         # Calculate or validate end date
         if args.end_date:
@@ -238,48 +248,17 @@ def generate_content_txt(events_data: list[dict]) -> str:
     lines = []
     
     for event_data in events_data:
-        # Parse date to get day name
-        date_str = event_data.get('date', '')
-        day_name = ''
-        formatted_date = date_str
-        
-        if date_str:
-            # Try to parse various date formats (YYYY-MM-DD is most common)
-            date_formats = [
-                '%Y-%m-%d',       # "2024-12-05" (most common)
-                '%B %d, %Y',      # "December 5, 2024"
-                '%b %d, %Y',      # "Dec 5, 2024"
-                '%m/%d/%Y',       # "12/05/2024"
-                '%d/%m/%Y',       # "05/12/2024"
-                '%A, %B %d, %Y',  # "Wednesday, December 5, 2024"
-                '%A, %b %d, %Y',  # "Wednesday, Dec 5, 2024"
-            ]
-            
-            parsed_date = None
-            for fmt in date_formats:
-                try:
-                    parsed_date = datetime.strptime(date_str, fmt)
-                    break
-                except ValueError:
-                    continue
-            
-            if parsed_date:
-                day_name = parsed_date.strftime('%A')
-                # Format as "Month Day" without leading zero on day
-                day_num = parsed_date.day
-                month_name = parsed_date.strftime('%B')
-                formatted_date = f"{month_name} {day_num}"
-        
-        # Build event line
-        title = event_data.get('title', 'Event')
-        location = event_data.get('location', '')
-        host = event_data.get('host', '')
+        title = event_data.get('title') or 'Event'
+        location = event_data.get('location') or ''
+        host = event_data.get('host') or ''
+        when = format_event_when(event_data)
+        day_name = event_weekday(event_data)
         
         event_line_parts = []
-        if day_name and formatted_date:
-            event_line_parts.append(f"{day_name}, {formatted_date}: {title}")
-        elif formatted_date:
-            event_line_parts.append(f"{formatted_date}: {title}")
+        if day_name and when:
+            event_line_parts.append(f"{day_name}, {when}: {title}")
+        elif when:
+            event_line_parts.append(f"{when}: {title}")
         else:
             event_line_parts.append(title)
         
