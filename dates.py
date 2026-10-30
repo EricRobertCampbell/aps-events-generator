@@ -74,6 +74,49 @@ def format_event_when(event: dict[str, Any]) -> str:
     return _format_range(start, end, timed=False)
 
 
+def format_registration_deadline(event: dict[str, Any]) -> str:
+    """
+    Format an event's registration deadline, when one is set.
+
+    ``registrationDeadline`` is either ``YYYY-MM-DD`` or an ISO datetime
+    with an offset. The year is omitted. A clock time is kept as written.
+
+    Args:
+        event: Event dictionary from the API. May include
+            ``registrationDeadline``.
+
+    Returns:
+        A label such as ``Registration deadline: January 20``, or an empty
+        string when the event has no deadline.
+
+    Example:
+        >>> format_registration_deadline({"registrationDeadline": "2026-01-20"})
+        'Registration deadline: January 20'
+        >>> format_registration_deadline({
+        ...     "registrationDeadline": "2026-01-20T17:00:00-07:00",
+        ... })
+        'Registration deadline: January 20, 5pm'
+        >>> format_registration_deadline({
+        ...     "registrationDeadline": "2026-01-20T19:30:00-07:00",
+        ... })
+        'Registration deadline: January 20, 7:30pm'
+        >>> format_registration_deadline({})
+        ''
+        >>> format_registration_deadline({"registrationDeadline": "  "})
+        ''
+    """
+    raw = _text(event.get("registrationDeadline"))
+    if not raw:
+        return ""
+    if "T" in raw:
+        when = format_event_when({"start": raw})
+    else:
+        when = format_event_when({"startDate": raw})
+    if not when:
+        return ""
+    return f"Registration deadline: {when}"
+
+
 def event_weekday(event: dict[str, Any]) -> str:
     """
     Return the weekday name for an event's start, in the event's own offset.

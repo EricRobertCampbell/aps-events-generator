@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 from svg import SVG, Text, Rect
-from dates import format_event_when
+from dates import format_event_when, format_registration_deadline
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ def generate_svg(
     - APS logo in the top-left corner
     - "Palaeo Events!" header text (centered horizontally)
     - Event details (title, subtitle, host, date, location) centered on the page
+    - Registration deadline, when the event includes one, below those details
     
     Args:
         event_data: Dictionary containing event information. May include:
@@ -42,6 +43,8 @@ def generate_svg(
             - endDate (str, optional): Date-only end, YYYY-MM-DD
             - host (str, optional): Event host
             - location (str, optional): Event location
+            - registrationDeadline (str, optional): ``YYYY-MM-DD`` or an ISO
+              datetime with an offset
         logo_path: Path to the APS logo SVG file. Defaults to the logo
             shipped with this project.
         
@@ -171,6 +174,17 @@ def generate_svg(
             'y_offset': current_y_offset
         })
         current_y_offset += 40 * line_height_multiplier
+
+    # Registration deadline sits below every other line
+    if (deadline := format_registration_deadline(event_data)):
+        content_elements.append({
+            'text': deadline,
+            'font_size': 32,
+            'font_weight': None,
+            'fill': TEXT_COLOUR,
+            'y_offset': current_y_offset
+        })
+        current_y_offset += 32 * line_height_multiplier
     
     # Calculate center position for the content group
     content_x = width / 2

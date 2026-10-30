@@ -78,6 +78,8 @@ class APIClient:
             - host (str, optional): Host, when it is not the APS
             - location (str, optional): Event location
             - detailsLink (str, optional): Link to more information
+            - registrationDeadline (str, optional): ``YYYY-MM-DD``, or an ISO
+              datetime with an offset
             - image (dict, optional): ``src``, ``alt``, and optional ``attribution``
             
         Raises:

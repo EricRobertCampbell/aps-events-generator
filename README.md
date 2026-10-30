@@ -111,6 +111,7 @@ Each SVG includes:
 - APS logo in the top-left corner, embedded in the file
 - "Palaeo Events!" header text (centered horizontally)
 - Event title, subtitle, host, date, and location (centered on the page)
+- Registration deadline, when the event includes one, below those details
 
 The logo artwork is written into the SVG, so moving the file does not break the logo. Dates are compact, for example `January 3, 4 - 5pm`. `content.txt` uses the same date after the weekday, for example `Saturday, January 3, 4 - 5pm: Event Title`.
 
@@ -139,6 +140,7 @@ The API should return a JSON array of event frontmatter. Dates stay in their sou
     "type": "External",
     "host": "Event Host",
     "location": "Calgary, AB",
+    "registrationDeadline": "2026-01-02T17:00:00-07:00",
     "detailsLink": "https://example.com/event",
     "image": {
       "src": "/events/2026/example.jpg",
@@ -166,6 +168,7 @@ The API should return a JSON array of event frontmatter. Dates stay in their sou
 - `host` (str, optional): Host, included only when the host is not the APS
 - `location` (str, optional): Event location
 - `detailsLink` (str, optional): Link to more information
+- `registrationDeadline` (str, optional): `YYYY-MM-DD`, or an ISO datetime with an offset. Drawn below the other text as `Registration deadline: January 2, 5pm`
 - `image` (object, optional): `src`, `alt`, and optional `attribution`. Not drawn on the graphic
 
 Missing optional fields are omitted and simply won't appear in the generated SVG. Timed fields are preferred over date-only fields when both are present. A same-day range such as 4:00 p.m. to 5:00 p.m. on January 3 is written as `January 3, 4 - 5pm`.
